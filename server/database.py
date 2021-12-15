@@ -1,8 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, DateTime
-from datetime import datetime
+from sqlalchemy import Column, Integer, String, Date
+from datetime import datetime, date as dtdate
 from dateutil.tz import tzlocal
 
 Base = declarative_base()
@@ -13,7 +13,7 @@ Defining the tables for the database
 class User(Base):
     __tablename__ = 'users'
     user_id = Column(Integer, primary_key=True)
-    username = Column(String(120), unique=True)
+    username = Column(String(120), unique=True, index=True)
     password = Column(String(120))
     happiness = Column(Integer)
     total_happiness = Column(Integer)
@@ -37,7 +37,7 @@ class Song(Base):
     length = Column(Integer)
     genre = Column(String(120))
     num_assigned = Column(Integer)
-    happiness = Column(Integer)
+    happiness = Column(Integer, index=True)
 
     def __init__(self, name=None, artist=None, length=0, genre=None, num_assigned=0, happiness=0):
         self.name = name
@@ -51,30 +51,36 @@ class Song(Base):
         return '<Song id: %d name: %s artist: %s length: %d genre: %s num_assigned: %d happiness: %d>' % (self.id, self.name, self.artist, self.length, self.genre, self.num_assigned, self.happiness)
 
 class Quote(Base):
-    __tablename__ = 'quotes'
+    __tablename__ = 'quote'
     quote_id = Column(Integer, primary_key=True)
     text = Column(String(240))
     author = Column(String(120))
-    timestamp = Column(DateTime(tzlocal()))
+    date = Column(Date)
     num_assigned = Column(Integer)
-    happiness = Column(Integer)
+    happiness = Column(Integer, index=True)
 
-    def __init__(self, text=None, author=None, num_assigned=0, happiness=0):
+    def __init__(self, text=None, author=None, date=None, num_assigned=0, happiness=0):
         self.text = text
         self.author = author
-        self.timestamp = datetime.now(tzlocal())
+        if (date == None):
+            date = dtdate.today()
+        else:
+            date = dtdate.fromisoformat(date)
+        print(date)
+        self.date = date
         self.num_assigned = num_assigned
         self.happiness = happiness
     
     def __repr__(self):
-        return '<Quote id: %d text: %s author: %s timestamp: %r num_assigned: %d happiness: %d>' % (self.id, self.text, self.author, self.timestamp, self.num_assigned, self.happiness)
+        return '<Quote id: %d text: %s author: %s date: %r num_assigned: %d happiness: %d>' % (self.id, self.text, self.author, self.date, self.num_assigned, self.happiness)
 
 class SongUser(Base):
     __tablename__ = 'usersong'
     user_id = Column(Integer, primary_key=True)
-    song_id = Column(Integer)
+    song_id = Column(Integer, index=True)
 
-    def __init__(self, song_id=0):
+    def __init__(self, user_id=0, song_id=0):
+        self.user_id = user_id
         self.song_id = song_id
 
     def __repr__(self):
@@ -83,14 +89,15 @@ class SongUser(Base):
 class QuoteUser(Base):
     __tablename__ = 'userquote'
     user_id = Column(Integer, primary_key=True)
-    quote_id = Column(Integer)
+    quote_id = Column(Integer, index=True)
 
-    def __init__(self, quote_id=0):
+    def __init__(self, user_id=0, quote_id=0):
+        self.user_id = user_id
         self.quote_id = quote_id
 
     def __repr__(self):
         return '<QuoteUser user_id: %d quote_id: %d>' % (self.user_id, self.quote_id)
-
+        
 engine = create_engine('sqlite:///test.db', convert_unicode=True)
 db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,

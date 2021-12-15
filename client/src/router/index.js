@@ -4,6 +4,8 @@ import VueRouter from 'vue-router';
 import Ping from '../components/Ping.vue';
 import Books from '../components/Books.vue';
 import Users from '../components/Users.vue';
+import Songs from '../components/Songs.vue';
+import Quotes from '../components/Quotes.vue';
 
 Vue.use(VueRouter);
 
@@ -35,6 +37,16 @@ const routes = [
     path: '/users',
     name: 'Users',
     component: Users,
+  },
+  {
+    path: '/songs',
+    name: 'Songs',
+    component: Songs,
+  },
+  {
+    path: '/quotes',
+    name: 'Quotes',
+    component: Quotes,
   },
 ];
 
